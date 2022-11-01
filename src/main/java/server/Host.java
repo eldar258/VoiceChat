@@ -42,11 +42,11 @@ public final class Host extends Thread {
             byte numberUsers = (byte) usersConnecting.size();
             byte[] parameters = new byte[5];
             for (var el : usersConnecting) {
-                if (!el.address.equals(address)) {
+                if (!el.address().equals(address)) {
                     parameters = Arrays.copyOf(address.getAddress(), parameters.length);
                     parameters[4] = numberUsers;
                     byte[] sendBuf = joinArray(parameters, buf);
-                    packet = new DatagramPacket(sendBuf, sendBuf.length, el.address, portClient);
+                    packet = new DatagramPacket(sendBuf, sendBuf.length, el.address(), portClient);
                     try {
                         socket.send(packet);
                     } catch (IOException e) {
