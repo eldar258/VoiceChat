@@ -1,5 +1,6 @@
 package helper;
 
+import java.net.DatagramPacket;
 import java.util.Random;
 
 public class ValuesGenerator {
@@ -9,5 +10,10 @@ public class ValuesGenerator {
         byte[] result = new byte[++n];
         random.nextBytes(result);
         return result;
+    }
+
+    public static DatagramPacket getDatagramPacket() {
+        byte[] buf = new byte[100];
+        return new DatagramPacket(buf, buf.length);
     }
 }
