@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -18,30 +19,40 @@ public class HostSendAllUsersTest {
 
     private final static int PORT = 6666;
 
-    @Test
-    public void whenSendAllUsersShouldSocketSendAll() throws IOException {
-        Set<AddressWithPort> usersSet = new HashSet<>();
-        InetAddress senderAddress = InetAddress.getByAddress(new byte[]{1, 1, 1, 1});
+    private Set<AddressWithPort> usersSet;
+    private InetAddress senderAddress;
+    int usersNumber;
+    DatagramSocket socketMock;
+
+    @Before
+    public void beforeSetup() throws IOException{
+        usersSet = new HashSet<>();
+        senderAddress = InetAddress.getByAddress(new byte[]{1, 1, 1, 1});
         usersSet.add(new AddressWithPort(senderAddress, PORT));
-        int usersNumber = 100;
+        usersNumber = 100;
         for (byte i = 1; i <= usersNumber; i ++){
             InetAddress address = InetAddress.getByAddress(new byte[]{i, i, i, i});
             usersSet.add(new AddressWithPort(address, PORT));
         }
 
-        DatagramSocket socketMock = mock(DatagramSocket.class);
+        socketMock = mock(DatagramSocket.class);
+    }
+
+    @Test
+    public void whenSendAllUsersShouldSocketSendAll() throws IOException {
+
         final byte expectedUsersNumberWithoutSender = (byte) (usersNumber - 1);
         byte[] dataForSend = getRandomByteArray();
 
         doAnswer(invocationOnMock -> {
             var packet = invocationOnMock.getArgument(0, DatagramPacket.class);
-            byte[] massageForSend = packet.getData();
+            byte[] sendedMassage = packet.getData();
 
             if (!packet.getAddress().equals(senderAddress)) {
 
-                assertEquals(dataForSend.length + 1, massageForSend.length);
-                assertEquals(expectedUsersNumberWithoutSender, massageForSend[0]);
-                final byte[] onlyMassage = Arrays.copyOfRange(massageForSend, 1, massageForSend.length);
+                assertEquals(dataForSend.length + 1, sendedMassage.length);
+                assertEquals(expectedUsersNumberWithoutSender, sendedMassage[0]);
+                final byte[] onlyMassage = Arrays.copyOfRange(sendedMassage, 1, sendedMassage.length);
                 assertArrayEquals(dataForSend, onlyMassage);
             } else {
                 fail();
@@ -55,9 +66,38 @@ public class HostSendAllUsersTest {
         verify(socketMock, times(usersNumber - 1)).send(any(DatagramPacket.class));
     }
 
+    @Test
+    public void whenUsersForSendEqualsZeroShouldDoNotSend() throws IOException {
+        HostSendAllUsers hostSendAllUsers = new HostSendAllUsers();
+
+        var addressWithPortOptional = usersSet.stream().findAny();
+        usersSet.clear();
+        usersSet.add(addressWithPortOptional.orElseThrow());
+        assertEquals(1, usersSet.size());
+        hostSendAllUsers.sendAll(usersSet, senderAddress, socketMock, getRandomByteArray());
+
+        verify(socketMock, times(0)).send(any());
+    }
+
+    @Test
+    public void whenSocketSendAndMustThrowExceptionShouldThrowException() throws IOException {
+        HostSendAllUsers hostSendAllUsers = new HostSendAllUsers();
+        IOException ioExceptionMock = spy(IOException.class);
+        doThrow(ioExceptionMock).when(socketMock).send(any());
+
+        hostSendAllUsers.sendAll(usersSet, senderAddress, socketMock, getRandomByteArray());
+
+
+
+        verify(socketMock, atLeastOnce()).send(any());
+        verify(ioExceptionMock, atLeastOnce()).printStackTrace();
+    }
+
     private static byte[] getRandomByteArray() {
         Random random = new Random();
         int n = random.nextInt(1000);
-        return new byte[++n];
+        byte[] result = new byte[++n];
+        random.nextBytes(result);
+        return result;
     }
 }
