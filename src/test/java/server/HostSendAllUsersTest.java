@@ -87,8 +87,6 @@ public class HostSendAllUsersTest {
 
         hostSendAllUsers.sendAll(usersSet, senderAddress, socketMock, ValuesGenerator.getRandomByteArray());
 
-
-
         verify(socketMock, atLeastOnce()).send(any());
         verify(ioExceptionMock, atLeastOnce()).printStackTrace();
     }
