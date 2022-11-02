@@ -1,13 +1,13 @@
 package server;
 
 import data.AddressWithPort;
+import helper.ValuesGenerator;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public class HostSendAllUsersTest {
     public void whenSendAllUsersShouldSocketSendAll() throws IOException {
 
         final byte expectedUsersNumberWithoutSender = (byte) (usersNumber - 1);
-        byte[] dataForSend = getRandomByteArray();
+        byte[] dataForSend = ValuesGenerator.getRandomByteArray();
 
         doAnswer(invocationOnMock -> {
             var packet = invocationOnMock.getArgument(0, DatagramPacket.class);
@@ -74,7 +74,7 @@ public class HostSendAllUsersTest {
         usersSet.clear();
         usersSet.add(addressWithPortOptional.orElseThrow());
         assertEquals(1, usersSet.size());
-        hostSendAllUsers.sendAll(usersSet, senderAddress, socketMock, getRandomByteArray());
+        hostSendAllUsers.sendAll(usersSet, senderAddress, socketMock, ValuesGenerator.getRandomByteArray());
 
         verify(socketMock, times(0)).send(any());
     }
@@ -85,19 +85,11 @@ public class HostSendAllUsersTest {
         IOException ioExceptionMock = spy(IOException.class);
         doThrow(ioExceptionMock).when(socketMock).send(any());
 
-        hostSendAllUsers.sendAll(usersSet, senderAddress, socketMock, getRandomByteArray());
+        hostSendAllUsers.sendAll(usersSet, senderAddress, socketMock, ValuesGenerator.getRandomByteArray());
 
 
 
         verify(socketMock, atLeastOnce()).send(any());
         verify(ioExceptionMock, atLeastOnce()).printStackTrace();
-    }
-
-    private static byte[] getRandomByteArray() {
-        Random random = new Random();
-        int n = random.nextInt(1000);
-        byte[] result = new byte[++n];
-        random.nextBytes(result);
-        return result;
     }
 }
