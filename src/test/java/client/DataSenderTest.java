@@ -16,6 +16,7 @@ public class DataSenderTest {
     public void whenDataSenderSendDataShouldSocketSendCorrectData() throws IOException {
         DatagramSocket socketMock = mock(DatagramSocket.class);
         byte[] expected = ValuesGenerator.getRandomByteArray();
+        int port = 6666;
 
         InetAddress address = ValuesGenerator.getRandomInetAddress();
         doAnswer(invocationOnMock -> {
@@ -23,11 +24,12 @@ public class DataSenderTest {
 
             assertArrayEquals(expected, datagramPacket.getData());
             assertEquals(address, datagramPacket.getAddress());
+            assertEquals(port, datagramPacket.getPort());
             return null;
         }).when(socketMock).send(any(DatagramPacket.class));
 
         DataSender dataSender = new DataSender();
-        dataSender.sendData(socketMock, address, expected);
+        dataSender.sendData(socketMock, address, port, expected);
         verify(socketMock, times(1)).send(any());
     }
 }

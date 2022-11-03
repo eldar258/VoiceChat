@@ -1,11 +1,12 @@
 package client;
 
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class DataSender {
 
-    public void sendData(DatagramSocket socket, InetAddress address, byte[] data) {
-
+    public void sendData(DatagramSocket socket, InetAddress address, int port, byte[] data) {
+        DatagramPacket datagramPacket = new DatagramPacket(data, data.length, address, port);
     }
 }
