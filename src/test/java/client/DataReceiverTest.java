@@ -27,17 +27,19 @@ public class DataReceiverTest {
 
     @Test
     public void whenReceive_thenSocketCallReceiveOnce() throws IOException {
-        dataReceiver.receive(socketMock);
+        dataReceiver.receive(socketMock, new byte[2]);
 
         verify(socketMock, times(1)).receive(any(DatagramPacket.class));
     }
 
     @Test
     public void whenReceiveSocketThrowException_thenPST() throws IOException {
-        IOException ioExceptionSpy = spy(IOException.class);
+        Exception ioExceptionSpy = mock(IOException.class);
         doThrow(ioExceptionSpy).when(socketMock).receive(any());
 
-        verify(ioExceptionSpy, atLeastOnce()).printStackTrace();
+        dataReceiver.receive(socketMock, new byte[2]);
+
+        verify(ioExceptionSpy, times(1)).printStackTrace();
     }
 
     @Test
@@ -56,7 +58,8 @@ public class DataReceiverTest {
             return null;
         }).when(socketMock).receive(any(DatagramPacket.class));
 
-        byte[][] result = dataReceiver.receive(socketMock);
+        byte[] emptyBuffer = new byte[expected[1].length];
+        byte[][] result = dataReceiver.receive(socketMock, emptyBuffer);
 
         assertArrayEquals(expected, result);
     }
