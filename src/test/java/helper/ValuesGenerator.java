@@ -26,4 +26,20 @@ public class ValuesGenerator {
         random.nextBytes(address);
         return InetAddress.getByAddress(address);
     }
+
+    public static int getRandomInt() {
+        return random.nextInt(Integer.MAX_VALUE);
+    }
+
+    public static int getRandomIntSigned() {
+        return random.nextInt();
+    }
+
+    public static byte getRandomByte() {
+        return (byte) random.nextInt(0, Byte.MAX_VALUE);
+    }
+
+    public static byte getRandomByteSigned() {
+        return (byte) random.nextInt(Byte.MIN_VALUE, Byte.MAX_VALUE);
+    }
 }
